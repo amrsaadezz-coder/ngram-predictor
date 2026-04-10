@@ -24,7 +24,6 @@ def run_dataprep(normalizer: Normalizer) -> None:
     raw_text = normalizer.load(train_raw_dir)
 
     sentences = normalizer.sentence_tokenize(raw_text)
-    sentences = sentences[:100]
 
     tokenized_sentences = []
 
