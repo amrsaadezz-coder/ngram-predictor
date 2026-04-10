@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from src.data_prep.normalizer import Normalizer
+from src.inference.predictor import Predictor
 from src.model.ngram_model import NGramModel
 
 
@@ -64,6 +65,41 @@ def run_model(model: NGramModel) -> None:
     print(f"Saved vocabulary to: {vocab_path}")
 
 
+def run_inference(predictor: Predictor, model: NGramModel) -> None:
+    """
+    Start the interactive CLI prediction loop.
+
+    Parameters:
+        predictor: A Predictor instance.
+        model: A loaded NGramModel instance.
+
+    Returns:
+        None.
+    """
+    model_path = os.getenv("MODEL")
+    vocab_path = os.getenv("VOCAB")
+    top_k = int(os.getenv("TOP_K"))
+
+    model.load(model_path, vocab_path)
+
+    print("Type some words to get next-word predictions.")
+    print("Type 'quit' to exit.")
+
+    try:
+        while True:
+            user_input = input("> ").strip()
+
+            if user_input.lower() == "quit":
+                print("Goodbye.")
+                break
+
+            predictions = predictor.predict_next(user_input, top_k)
+            print(f"Predictions: {predictions}")
+
+    except KeyboardInterrupt:
+        print("\nGoodbye.")
+
+
 def main():
     """Parse command-line arguments and run the selected pipeline step."""
     load_dotenv("config/.env")
@@ -85,17 +121,18 @@ def main():
 
     normalizer = Normalizer()
     model = NGramModel(ngram_order=ngram_order, unk_threshold=unk_threshold)
+    predictor = Predictor(model=model, normalizer=normalizer)
 
     if args.step == "dataprep":
         run_dataprep(normalizer)
     elif args.step == "model":
         run_model(model)
     elif args.step == "inference":
-        print("Inference step selected.")
+        run_inference(predictor, model)
     elif args.step == "all":
         run_dataprep(normalizer)
         run_model(model)
-        print("Inference step selected.")
+        run_inference(predictor, model)
 
 
 if __name__ == "__main__":
