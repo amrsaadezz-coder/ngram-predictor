@@ -1,0 +1,166 @@
+import os
+import re
+from typing import List
+
+import nltk
+
+
+class Normalizer:
+    """Load, clean, normalize, tokenize, and save corpus text."""
+
+    def load(self, folder_path: str) -> str:
+        """
+        Load and concatenate all .txt files from a folder.
+
+        Parameters:
+            folder_path: Path to the folder containing text files.
+
+        Returns:
+            A single string containing the contents of all .txt files.
+        """
+        texts = []
+
+        for filename in sorted(os.listdir(folder_path)):
+            if filename.endswith(".txt"):
+                file_path = os.path.join(folder_path, filename)
+                with open(file_path, "r", encoding="utf-8") as file:
+                    texts.append(file.read())
+
+        return "\n".join(texts)
+
+    def strip_gutenberg(self, text: str) -> str:
+        """
+        Remove Project Gutenberg header and footer from a text.
+
+        Parameters:
+            text: Raw text content.
+
+        Returns:
+            Text with Gutenberg header and footer removed where possible.
+        """
+        start_pattern = r"\*\*\* START OF THE PROJECT GUTENBERG EBOOK .*? \*\*\*"
+        end_pattern = r"\*\*\* END OF THE PROJECT GUTENBERG EBOOK .*? \*\*\*"
+
+        start_match = re.search(start_pattern, text, flags=re.DOTALL)
+        end_match = re.search(end_pattern, text, flags=re.DOTALL)
+
+        if start_match:
+            text = text[start_match.end():]
+
+        if end_match:
+            text = text[:end_match.start()]
+
+        return text
+
+    def lowercase(self, text: str) -> str:
+        """
+        Convert text to lowercase.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            Lowercased text.
+        """
+        return text.lower()
+
+    def remove_punctuation(self, text: str) -> str:
+        """
+        Remove punctuation from text.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            Text with punctuation removed.
+        """
+        return re.sub(r"[^\w\s]", "", text)
+
+    def remove_numbers(self, text: str) -> str:
+        """
+        Remove digits from text.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            Text with numbers removed.
+        """
+        return re.sub(r"\d+", "", text)
+
+    def remove_whitespace(self, text: str) -> str:
+        """
+        Remove extra whitespace and blank lines.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            Cleaned text with normalized spacing.
+        """
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
+
+    def normalize(self, text: str) -> str:
+        """
+        Apply the full normalization pipeline in the required order.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            Normalized text.
+        """
+        text = self.lowercase(text)
+        text = self.remove_punctuation(text)
+        text = self.remove_numbers(text)
+        text = self.remove_whitespace(text)
+        return text
+
+    def sentence_tokenize(self, text: str) -> List[str]:
+        """
+        Split text into sentences.
+
+        Parameters:
+            text: Input text.
+
+        Returns:
+            A list of sentence strings.
+        """
+        return nltk.sent_tokenize(text)
+
+    def word_tokenize(self, sentence: str) -> List[str]:
+        """
+        Split a sentence into word tokens.
+
+        Parameters:
+            sentence: A single sentence.
+
+        Returns:
+            A list of word tokens.
+        """
+        return sentence.split()
+
+    def save(self, sentences: List[List[str]], filepath: str) -> None:
+        """
+        Save tokenized sentences to a file, one sentence per line.
+
+        Parameters:
+            sentences: List of tokenized sentences.
+            filepath: Output file path.
+
+        Returns:
+            None.
+        """
+        with open(filepath, "w", encoding="utf-8") as file:
+            for sentence in sentences:
+                file.write(" ".join(sentence) + "\n")
+
+
+def main():
+    """Run the normalizer module in isolation."""
+    print("Normalizer module is ready for testing.")
+
+
+if __name__ == "__main__":
+    main()
