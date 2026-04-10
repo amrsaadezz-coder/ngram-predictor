@@ -10,21 +10,26 @@ class Normalizer:
 
     def load(self, folder_path: str) -> str:
         """
-        Load and concatenate all .txt files from a folder.
+        Load all .txt files from a folder, strip Gutenberg boilerplate
+        from each file, and concatenate them into one text string.
 
         Parameters:
             folder_path: Path to the folder containing text files.
 
         Returns:
-            A single string containing the contents of all .txt files.
+            A single string containing the cleaned contents of all .txt files.
         """
         texts = []
 
         for filename in sorted(os.listdir(folder_path)):
             if filename.endswith(".txt"):
                 file_path = os.path.join(folder_path, filename)
+
                 with open(file_path, "r", encoding="utf-8") as file:
-                    texts.append(file.read())
+                    text = file.read()
+
+                text = self.strip_gutenberg(text)
+                texts.append(text)
 
         return "\n".join(texts)
 
@@ -38,11 +43,16 @@ class Normalizer:
         Returns:
             Text with Gutenberg header and footer removed where possible.
         """
-        start_pattern = r"\*\*\* START OF THE PROJECT GUTENBERG EBOOK .*? \*\*\*"
-        end_pattern = r"\*\*\* END OF THE PROJECT GUTENBERG EBOOK .*? \*\*\*"
-
-        start_match = re.search(start_pattern, text, flags=re.DOTALL)
-        end_match = re.search(end_pattern, text, flags=re.DOTALL)
+        start_match = re.search(
+            r"\*\*\* START OF THE PROJECT GUTENBERG EBOOK .*?\*\*\*",
+            text,
+            flags=re.IGNORECASE | re.DOTALL
+        )
+        end_match = re.search(
+            r"\*\*\* END OF THE PROJECT GUTENBERG EBOOK .*?\*\*\*",
+            text,
+            flags=re.IGNORECASE | re.DOTALL
+        )
 
         if start_match:
             text = text[start_match.end():]
@@ -50,7 +60,7 @@ class Normalizer:
         if end_match:
             text = text[:end_match.start()]
 
-        return text
+        return text.strip()
 
     def lowercase(self, text: str) -> str:
         """
@@ -65,8 +75,7 @@ class Normalizer:
         return text.lower()
 
     def remove_punctuation(self, text: str) -> str:
-        """
-        Remove punctuation from text.
+        """Remove punctuation from text.
 
         Parameters:
             text: Input text.
@@ -74,8 +83,8 @@ class Normalizer:
         Returns:
             Text with punctuation removed.
         """
-        return re.sub(r"[^\w\s]", "", text)
-
+        return re.sub(r"[^a-z\s]", " ", text)
+    
     def remove_numbers(self, text: str) -> str:
         """
         Remove digits from text.

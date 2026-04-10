@@ -20,7 +20,6 @@ def run_dataprep(normalizer: Normalizer) -> None:
     train_tokens_path = os.getenv("TRAIN_TOKENS")
 
     raw_text = normalizer.load(train_raw_dir)
-    raw_text = normalizer.strip_gutenberg(raw_text)
 
     sentences = normalizer.sentence_tokenize(raw_text)
     sentences = sentences[:100]
