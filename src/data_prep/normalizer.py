@@ -19,6 +19,12 @@ class Normalizer:
         Returns:
             A single string containing the cleaned contents of all .txt files.
         """
+        if not os.path.isdir(folder_path):
+            raise FileNotFoundError(
+                f"Training folder not found: {folder_path}. "
+                "Please create it and place the raw .txt books inside."
+            )
+
         texts = []
 
         for filename in sorted(os.listdir(folder_path)):
@@ -44,12 +50,12 @@ class Normalizer:
             Text with Gutenberg header and footer removed where possible.
         """
         start_match = re.search(
-            r"\*\*\* START OF THE PROJECT GUTENBERG EBOOK .*?\*\*\*",
+            r"\*\*\*\s*START OF (THE|THIS) PROJECT GUTENBERG EBOOK.*?\*\*\*",
             text,
             flags=re.IGNORECASE | re.DOTALL
         )
         end_match = re.search(
-            r"\*\*\* END OF THE PROJECT GUTENBERG EBOOK .*?\*\*\*",
+            r"\*\*\*\s*END OF (THE|THIS) PROJECT GUTENBERG EBOOK.*?\*\*\*",
             text,
             flags=re.IGNORECASE | re.DOTALL
         )
@@ -75,7 +81,8 @@ class Normalizer:
         return text.lower()
 
     def remove_punctuation(self, text: str) -> str:
-        """Remove punctuation from text.
+        """
+        Remove punctuation from text.
 
         Parameters:
             text: Input text.
@@ -84,7 +91,7 @@ class Normalizer:
             Text with punctuation removed.
         """
         return re.sub(r"[^a-z\s]", " ", text)
-    
+
     def remove_numbers(self, text: str) -> str:
         """
         Remove digits from text.
@@ -161,6 +168,8 @@ class Normalizer:
         Returns:
             None.
         """
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
         with open(filepath, "w", encoding="utf-8") as file:
             for sentence in sentences:
                 file.write(" ".join(sentence) + "\n")

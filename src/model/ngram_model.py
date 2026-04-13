@@ -149,12 +149,15 @@ class NGramModel:
         Returns:
             None.
         """
+        import os
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        os.makedirs(os.path.dirname(vocab_path), exist_ok=True)
+
         with open(model_path, "w", encoding="utf-8") as model_file:
             json.dump(self.model, model_file, indent=2)
 
         with open(vocab_path, "w", encoding="utf-8") as vocab_file:
             json.dump(sorted(self.vocab), vocab_file, indent=2)
-
     def load(self, model_path: str, vocab_path: str) -> None:
         """
         Load the model probabilities and vocabulary from JSON files.
