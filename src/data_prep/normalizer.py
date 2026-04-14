@@ -2,7 +2,8 @@ import os
 import re
 from typing import List
 
-import nltk
+import nltk 
+nltk.download('punkt')
 
 
 class Normalizer:
